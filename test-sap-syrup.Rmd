@@ -8,3 +8,18 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+x <- 1
+
+_
+# Read libraries
+```{r}
+# Library: dplyr, expss, ggplot2, ggpubr, labeling, plyr,
+#       tidyverse, 
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(plyr)
+library(labeling)
+library(ggpubr)
+library(expss)

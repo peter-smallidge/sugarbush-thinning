@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "sap syrup yield"
 author: "Peter Smallidge"
 date: "10/9/2020"
 output: github_document
@@ -28,4 +28,5 @@ ___
 setwd("~/R/maple.crown.data.R-code")
 trees=read.table("maple.attribute2020.07.09.csv", header = TRUE, sep = ",")
 ```
+trees
 
