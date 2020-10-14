@@ -1,0 +1,31 @@
+---
+title: "Untitled"
+author: "Peter Smallidge"
+date: "10/9/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+___
+# Read libraries
+```{r}
+# Library: dplyr, expss, ggplot2, ggpubr, labeling, plyr,
+#       tidyverse, 
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(plyr)
+library(labeling)
+library(ggpubr)
+library(expss)
+```
+
+___
+#Read data files as csv located within the repository
+```{r}
+setwd("~/R/maple.crown.data.R-code")
+trees=read.table("maple.attribute2020.07.09.csv", header = TRUE, sep = ",")
+```
+
