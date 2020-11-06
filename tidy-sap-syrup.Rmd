@@ -13,8 +13,37 @@ x <- 1
 
 _
 # Read libraries
+
 ```{r}
+
 # Library:
 #       tidyverse, skimr
 library(tidyverse)
 library(skimr)
+library(readr)
+
+
+#
+# ALT plus hypen = <- (within chunk)
+# ctrl plus shift plus m = %>% 
+# ctrl + ALT + I = insert chunk
+# filter rows, select columns
+# 
+
+
+```
+
+```{r}
+
+
+raw <- read_csv("lumbershed.static.2020.csv", 
+    col_types = cols(seq = col_character(), 
+        tag = col_integer(), ftg2017 = col_integer()))
+raw <- raw %>% 
+  select(-ftg2017_1) 
+
+
+head(raw, n=10)
+
+```
+
