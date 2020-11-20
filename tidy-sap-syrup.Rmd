@@ -9,9 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-x <- 1
 
-_
 # Read libraries
 
 ```{r}
@@ -19,6 +17,7 @@ _
 # Library:
 #       tidyverse, skimr
 library(tidyverse)
+library(tidyr)
 library(skimr)
 library(readr)
 
@@ -28,22 +27,218 @@ library(readr)
 # ctrl plus shift plus m = %>% 
 # ctrl + ALT + I = insert chunk
 # filter rows, select columns
-# 
+# RMD comment = <!-- comment -->
 
 
 ```
+### Reading Static (single measurement) Variables
+
 
 ```{r}
-
-
-raw <- read_csv("lumbershed.static.2020.csv", 
+crown <- read_csv("lumbershed.static.2020.csv", 
     col_types = cols(seq = col_character(), 
         tag = col_integer(), ftg2017 = col_integer()))
-raw <- raw %>% 
+crown <- crown %>% 
   select(-ftg2017_1) 
 
 
-head(raw, n=10)
+head(crown, n=10)
 
 ```
+
+
+### Reading Annual SSC and Sap Volume Measurements
+
+```{r}
+
+syrup_wide <- read_csv("lumbershed.annual.2020.csv",
+                       col_types = cols(seq = col_character(),
+                                        tag = col_integer())
+                       ) %>% 
+  mutate(vigor_base2017 = (dbh2017^2 * 0.005454 * 144),
+         ba2017 = (dbh2017 ^ 2 * 0.005454 * 144),
+         ba2018 = (dbh2018^2 * 0.005454 * 144),
+         ba2019 = (dbh2019^2 * 0.005454 * 144),
+         ba2020 = (dbh2020^2 * 0.005454 * 144),
+         bai2018 = (ba2018 - ba2017),
+         bai2019 = (ba2019 - ba2018),
+         bai2020 = (ba2020 - ba2019),
+         rbai2018 = (bai2018 / vigor_base2017*100),
+         rbai2019 = (bai2019 / vigor_base2017*100),
+         rbai2020 = (bai2020 / vigor_base2017*100)
+         )%>% 
+  select(-sap2020.long, -ssc2020.long, -syrup2020.long)
+
+
+head(syrup_wide, n=10)
+
+```
+
+
+### Pivot wide to long
+
+```{r}
+#tree diameter data, pivot long
+#
+#
+# dbh data, pivot long
+diam <-  
+  pivot_longer(syrup_wide, c(dbh2016, dbh2017, dbh2018, dbh2019, dbh2020), names_to = 'year', values_to = 'dbh') %>% 
+  select(seq, tag, dbh, year, vigor_base2017)
+
+diam$year[diam$year == "dbh2016"] <- "2016"
+diam$year[diam$year == "dbh2017"] <- "2017"
+diam$year[diam$year == "dbh2018"] <- "2018"
+diam$year[diam$year == "dbh2019"] <- "2019"
+diam$year[diam$year == "dbh2020"] <- "2020"
+
+diam$year <- as.integer(diam$year)
+head(diam, n=10)
+
+
+# basal area data, pivot long
+basal <-  
+  pivot_longer(syrup_wide, c(ba2017, ba2018, ba2019, ba2020), names_to = 'year', values_to = 'basal_area') %>% 
+  select(seq, tag, basal_area, year)
+
+basal$year[basal$year == "ba2017"] <- "2017"
+basal$year[basal$year == "ba2018"] <- "2018"
+basal$year[basal$year == "ba2019"] <- "2019"
+basal$year[basal$year == "ba2020"] <- "2020"
+
+basal$year <- as.integer(basal$year)
+head(basal, n=10)
+
+
+
+# BAI = basal area increment data, pivot long
+increment <-  
+  pivot_longer(syrup_wide, c(bai2018, bai2019, bai2020), names_to = 'year', values_to = 'bai') %>% 
+  select(seq, tag, bai, year)
+
+increment$year[increment$year == "bai2018"] <- "2018"
+increment$year[increment$year == "bai2019"] <- "2019"
+increment$year[increment$year == "bai2020"] <- "2020"
+
+increment$year <- as.integer(increment$year)
+head(increment, n=10)
+
+
+
+# rBAI = relative basal area increment data (AKA vigor), pivot long
+vig01 <-  
+  pivot_longer(syrup_wide, c(rbai2018, rbai2019, rbai2020), names_to = 'year', values_to = 'rbai') %>% 
+  select(seq, tag, rbai, year)
+
+vig01$year[vig01$year == "rbai2018"] <- "2018"
+vig01$year[vig01$year == "rbai2019"] <- "2019"
+vig01$year[vig01$year == "rbai2020"] <- "2020"
+
+vig01$year <- as.integer(vig01$year)
+head(vig01, n=10)
+
+
+
+
+# sap volume data pivot long
+sap <- 
+  pivot_longer(syrup_wide, c(sap2017, sap2018, sap2019, sap2020), names_to = 'year', values_to = "sap_vol") %>% 
+  select(seq, tag, sap_vol, year)
+
+sap$year[sap$year == "sap2017"] <- "2017"
+sap$year[sap$year == "sap2018"] <- "2018"
+sap$year[sap$year == "sap2019"] <- "2019"
+sap$year[sap$year == "sap2020"] <- "2020"
+
+sap$year <- as.integer(sap$year)
+head(sap, n=10)
+
+
+
+
+# SSC (sap sugar concentration) data pivot long
+sugar <- 
+  pivot_longer(syrup_wide, c(ssc2017, ssc2018, ssc2019, ssc2020), names_to = 'year', values_to = "ssc") %>% 
+  select(seq, tag, ssc, year)
+
+sugar$year[sugar$year == "ssc2017"] <- "2017"
+sugar$year[sugar$year == "ssc2018"] <- "2018"
+sugar$year[sugar$year == "ssc2019"] <- "2019"
+sugar$year[sugar$year == "ssc2020"] <- "2020"
+
+sugar$year <- as.integer(sugar$year)
+head(sugar, n=10)
+
+
+
+# Syrup (maple syrup volume in gallons) data pivot long
+syrup <- 
+  pivot_longer(syrup_wide, c(syrup2017, syrup2018, syrup2019, syrup2020), names_to = 'year', values_to = "syrup_vol") %>% 
+  select(seq, tag, syrup_vol, year)
+
+syrup$year[syrup$year == "syrup2017"] <- "2017"
+syrup$year[syrup$year == "syrup2018"] <- "2018"
+syrup$year[syrup$year == "syrup2019"] <- "2019"
+syrup$year[syrup$year == "syrup2020"] <- "2020"
+
+syrup$year <- as.integer(syrup$year)
+head(syrup, n=10)
+
+
+
+```
+
+### full join data files:
+### diam, basal, increment, vigor, sap, sugar, syrup
+### by seq, tag, year
+
+
+```{r}
+
+annual <- diam %>% 
+  full_join(basal, by = c("seq", "tag", "year")) %>% 
+  full_join(increment, by = c("seq", "tag", "year")) %>% 
+  full_join(vig01, by = c("seq", "tag", "year")) %>% 
+  full_join(sap, by = c("seq", "tag", "year")) %>% 
+  full_join(sugar, by = c("seq", "tag", "year")) %>% 
+  full_join(syrup, by = c("seq", "tag", "year")) %>% 
+  full_join(crown, by = c("seq", "tag"))
+
+head(annual, n=10)
+
+library(knitr)
+# kable(annual)  ## this code works
+```
+
+## Assess Tree Vigor and Performance
+
+```{r}
+vig02 <- annual %>% 
+  select(seq, tag, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
+         crown.class, pct.open.jan.2019, FTG2019, crown.area.2017) %>% 
+  group_by(FTG2019, year) %>% 
+  summarize(
+    vigor = mean(rbai),
+    dbh = median(dbh),
+    BA = mean(basal_area),
+    PCTopen = mean(pct.open.jan.2019),
+    crown.area = mean(crown.area.2017),
+    sap_gal = mean(sap_vol),
+    ssc = mean(ssc),
+    syrup_gal = mean(syrup_vol)
+  )
+
+head(vig02)
+
+vig02 %>% 
+  write_csv(path = "summary-vigor-syrup-annual.csv")
+
+## NEXT - rerun the group_by / summarize to sort for 2019 and 2020 data.
+## rerun the analysis
+## 
+## run ggplot x =rbai, y = various tree metrics, size = year
+
+```
+
+
 
