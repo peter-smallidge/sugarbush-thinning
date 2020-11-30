@@ -17,6 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # Library:
 #       tidyverse, skimr
 library(tidyverse)
+library(ggplot2)
+library(ggpubr)
 library(tidyr)
 library(skimr)
 library(readr)
@@ -86,13 +88,13 @@ diam <-
   pivot_longer(syrup_wide, c(dbh2016, dbh2017, dbh2018, dbh2019, dbh2020), names_to = 'year', values_to = 'dbh') %>% 
   select(seq, tag, dbh, year, vigor_base2017)
 
-diam$year[diam$year == "dbh2016"] <- "2016"
+diam$year[diam$year == "dbh2016"] <- "2016"  # recode the values to be the year, not "dbhyear"
 diam$year[diam$year == "dbh2017"] <- "2017"
 diam$year[diam$year == "dbh2018"] <- "2018"
 diam$year[diam$year == "dbh2019"] <- "2019"
 diam$year[diam$year == "dbh2020"] <- "2020"
 
-diam$year <- as.integer(diam$year)
+diam$year <- as.integer(diam$year) # convert the variable year to integer from character
 head(diam, n=10)
 
 
@@ -241,4 +243,102 @@ vig02 %>%
 ```
 
 
+```{r}
+
+## plot code example 1
+ggplot(data = annual) +
+  geom_point(mapping = aes(x= bai, y = ssc, color = year, size = dbh), shape = 1) +
+  geom_smooth(mapping = aes(x = bai, y = ssc), method = lm, se = FALSE) 
+  
+
+# equivalent to plot code example 1
+ggplot(data = annual, mapping = aes(x = bai, y = ssc)) +
+  geom_point(mapping = aes(color = year, size = dbh), method = lm, se = FALSE, shape = 1) +
+  geom_smooth() +
+  theme_bw()
+
+dir.create("figures")
+
+ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2019, y = ssc2020)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2019 (sq. in.)",
+    y = "Sap Sugar Concentration 2020 (%)",
+    title = "Tree Growth and SSC",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/bai2019-ssc2020.jpg")
+
+  
+ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2018, y = ssc2019)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2018 (sq. in.)",
+    y = "Sap Sugar Concentration 2019 (%)",
+    title = "Tree Growth and SSC",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/bai2018-ssc2019.jpg")
+
+  ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2018, y = sap2019)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2018 (sq. in.)",
+    y = "Sap Volume 2019 (gallons)",
+    title = "Tree Growth and Sap Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/bai2018-sap2019.jpg")
+  
+ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2019, y = sap2020)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2019 (sq. in.)",
+    y = "Sap Volume 2020 (gallons)",
+    title = "Tree Growth and Sap Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/bai2019-sap2020.jpg")
+  
+
+# R and p-value https://stackoverflow.com/questions/7549694/add-regression-line-equation-and-r2-on-graph?noredirect=1&lq=1 
+# 
+
+```
 
