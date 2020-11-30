@@ -246,18 +246,20 @@ vig02 %>%
 ```{r}
 
 ## plot code example 1
-ggplot(data = annual) +
-  geom_point(mapping = aes(x= bai, y = ssc, color = year, size = dbh), shape = 1) +
-  geom_smooth(mapping = aes(x = bai, y = ssc), method = lm, se = FALSE) 
+#ggplot(data = annual) +
+#  geom_point(mapping = aes(x= bai, y = ssc, color = year, size = dbh), shape = 1) +
+#  geom_smooth(mapping = aes(x = bai, y = ssc), method = lm, se = FALSE) 
   
 
 # equivalent to plot code example 1
-ggplot(data = annual, mapping = aes(x = bai, y = ssc)) +
-  geom_point(mapping = aes(color = year, size = dbh), method = lm, se = FALSE, shape = 1) +
-  geom_smooth() +
-  theme_bw()
+#ggplot(data = annual, mapping = aes(x = bai, y = ssc)) +
+#  geom_point(mapping = aes(color = year, size = dbh), method = lm, se = FALSE, shape = 1) +
+#  geom_smooth() +
+#  theme_bw()
 
 dir.create("figures")
+
+  ### BAI and SSC  
 
 ggplot((data = syrup_wide), 
        mapping = aes(x=bai2019, y = ssc2020)) +
@@ -298,6 +300,9 @@ ggplot((data = syrup_wide),
 
   ggsave("figures/bai2018-ssc2019.jpg")
 
+  
+  ### BAI and Sap Volume  
+
   ggplot((data = syrup_wide), 
        mapping = aes(x=bai2018, y = sap2019)) +
   geom_point((mapping = aes(size = crown.area.2017))) +
@@ -316,6 +321,8 @@ ggplot((data = syrup_wide),
   )
 
   ggsave("figures/bai2018-sap2019.jpg")
+
+
   
 ggplot((data = syrup_wide), 
        mapping = aes(x=bai2019, y = sap2020)) +
@@ -337,6 +344,182 @@ ggplot((data = syrup_wide),
   ggsave("figures/bai2019-sap2020.jpg")
   
 
+  
+  ### BAI and Syrup Volume  
+  
+  ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2018, y = syrup2019)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2018 (sq. in.)",
+    y = "Syrup Volume 2019 (gallons)",
+    title = "Tree Growth and Syrup Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/bai2018-syrup2019.jpg")
+
+
+  
+ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2019, y = syrup2020)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2019 (sq. in.)",
+    y = "Syrup Volume 2020 (gallons)",
+    title = "Tree Growth and Syrup Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/bai2019-syrup2020.jpg")
+
+  
+  ### rBAI and Sap Sugar Concentration  
+  
+  ggplot((data = syrup_wide), 
+       mapping = aes(x=rbai2018, y = ssc2019)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Vigor (rBAI) 2018 (%)",
+    y = "Sap Sugar Concentration 2019 (%)",
+    title = "Tree Vigor and Sap Sugar Concentration",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/rbai2018-ssc2019.jpg")
+
+
+  
+ggplot((data = syrup_wide), 
+       mapping = aes(x=rbai2019, y = ssc2020)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Vigor (rBAI) 2019 (%)",
+    y = "Sap Sugar Concentration 2020 (%)",
+    title = "Tree Vigor and Sap Sugar Concentration",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/rbai2019-ssc2020.jpg")
+  
+  
+  
+  
+  ### rBAI and Sap Volume  
+  
+  ggplot((data = syrup_wide), 
+       mapping = aes(x=rbai2018, y = sap2019)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Vigor (rBAI) 2018 (%)",
+    y = "Sap Volume 2019 (gallons)",
+    title = "Tree Vigor and Sap Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/rbai2018-sap2019.jpg")
+
+
+  
+ggplot((data = syrup_wide), 
+       mapping = aes(x=rbai2019, y = sap2020)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Vigor (rBAI) 2019 (%)",
+    y = "Sap Volume 2020 (gallons)",
+    title = "Tree Vigor and Sap Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/rbai2019-sap2020.jpg")
+  
+    
+  
+  ### rBAI and Syrup Volume  
+  
+  ggplot((data = syrup_wide), 
+       mapping = aes(x=rbai2018, y = syrup2019)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Vigor (rBAI) 2018 (%)",
+    y = "Syrup Volume 2019 (gallons)",
+    title = "Tree Vigor and Syrup Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/rbai2018-syrup2019.jpg")
+
+
+  
+ggplot((data = syrup_wide), 
+       mapping = aes(x=rbai2019, y = syrup2020)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Vigor (rBAI) 2019 (%)",
+    y = "Syrup Volume 2020 (gallons)",
+    title = "Tree Vigor and Syrup Volume",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/rbai2019-syrup2020.jpg")
+  
+  
 # R and p-value https://stackoverflow.com/questions/7549694/add-regression-line-equation-and-r2-on-graph?noredirect=1&lq=1 
 # 
 
