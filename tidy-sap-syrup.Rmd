@@ -243,7 +243,20 @@ vig02 %>%
 ```
 
 
+<!-- comment (11/30/2020)-->
+<!-- I need to offset the year of growth by one -->
+<!-- such that the output (ssc) of year i is associated with growth in year i-1 -->
+<!-- select the growth variables and year which is integer, set year = year -1 -->
+<!-- filter to remove year = 2015 -->
+<!-- full join the adjusted year to the output df by year -->
+<!-- print the columns to confirm the action -->
+
+
+
+
+
 ```{r}
+
 
 ## plot code example 1
 #ggplot(data = annual) +
