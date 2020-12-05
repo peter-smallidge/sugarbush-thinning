@@ -831,6 +831,29 @@ ggplot((data = year_adjusted),
   ggsave("figures/dbh-syrup.jpg")
   
   
+  
+ggplot((data = year_adjusted), 
+       mapping = aes(x=dbh, y = ssc)) +
+  geom_point((mapping = aes(size = crown.area.2017, color = strata.post))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,25)+
+  labs(
+    x = "Diameter Breast Height = dbh  ( in.)",
+    y = "Sap Sugar Concentration (%)",
+    title = "Tree Size and Syrup Production",
+    subtitle = "Arnot Forest"
+  )
+
+  ggsave("figures/dbh-ssc.jpg")
+  
+  
+  
+  
 ggplot((data = year_adjusted), 
        mapping = aes(x=basal_area, y = syrup_vol)) +
   geom_point((mapping = aes(size = crown.area.2017, color = strata.post))) +
