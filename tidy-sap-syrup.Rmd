@@ -89,7 +89,9 @@ head(syrup_wide, n=10)
 #
 # dbh data, pivot long
 diam <-  
-  pivot_longer(syrup_wide, c(dbh2016, dbh2017, dbh2018, dbh2019, dbh2020), names_to = 'year', values_to = 'dbh') %>% 
+  pivot_longer(syrup_wide, c(dbh2016, dbh2017, dbh2018, dbh2019, dbh2020), names_to = 'year', values_to = 'dbh') %>%  # the "names_to" command uses the variables dbh2016, etc as the data within a new
+  # variable "year" The values_to command places the data of the variables dbh2016 etc within a new
+  # variable "dbh"
   select(seq, tag, dbh, year, vigor_base2017)
 
 diam$year[diam$year == "dbh2016"] <- "2016"  # recode the values to be the year, not "dbhyear"
@@ -150,7 +152,7 @@ head(vig01, n=10)
 
 
 
-# sap volume data pivot long
+# sap volume data (gallons) pivot long
 sap <- 
   pivot_longer(syrup_wide, c(sap2017, sap2018, sap2019, sap2020), names_to = 'year', values_to = "sap_vol") %>% 
   select(seq, tag, sap_vol, year)
@@ -198,7 +200,7 @@ head(syrup, n=10)
 
 ```
 
-### full join data files:
+### full join of the data files:
 ### diam, basal, increment, vigor, sap, sugar, syrup
 ### by seq, tag, year
 
@@ -212,7 +214,14 @@ annual <- diam %>%
   full_join(sap, by = c("seq", "tag", "year")) %>% 
   full_join(sugar, by = c("seq", "tag", "year")) %>% 
   full_join(syrup, by = c("seq", "tag", "year")) %>% 
-  full_join(crown, by = c("seq", "tag"))
+  full_join(crown, by = c("seq", "tag")) %>% 
+  mutate(numb = 1) %>% 
+  select(seq, tag, year, numb, everything())
+
+# the above code creates a new datafile (df) called "annual" based on the diam df
+# the "full_join" command adds the df BASAL to df DIAM by aligning the columns
+# seq, tag, and year. Each addition df is joined. The "full_join" retains all rows, even if there 
+# are missing values.
 
 head(annual, n=10)
 
@@ -226,14 +235,18 @@ library(knitr)
 ## Assess Tree Vigor and Performance
 ```{r}
 vig_test <- annual %>% 
-  select(seq, tag, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
-         crown.class, pct.open.jan.2019, FTG2019, crown.area.2017) %>% 
+  select(seq, tag, numb, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
+         crown.class, pct.open.jan.2019, FTG2019, crown.area.2017) %>%
+    filter(year > 2016) %>% 
   group_by(FTG2019, year) %>% 
   summarize(
-    dbh = median(dbh),
+    n = sum(is.na (numb)),
+    n2 = n(),
+    dbh_med = median(dbh),
+    dbh_mean = mean(dbh),
     BA = mean(basal_area),
     PCTopen = mean(pct.open.jan.2019),
-    sap_gal = mean(sap_vol)
+    sap_gal = mean((sap_vol))
   )
 head(vig_test, n=20)
 ```
@@ -244,16 +257,19 @@ head(vig_test, n=20)
 vig02 <- annual %>% 
   select(seq, tag, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
          crown.class, pct.open.jan.2019, FTG2019, crown.area.2017) %>% 
+    filter(year > 2016) %>% 
   group_by(FTG2019, year) %>% 
   summarize(
+    n = n(),
     vigor = mean(rbai),
-    dbh = median(dbh),
+    dbh_med = median(dbh),
+    dbh_mean = mean(dbh),
     BA = mean(basal_area),
     PCTopen = mean(pct.open.jan.2019),
     crown.area = mean(crown.area.2017),
-    sap_gal = mean(sap_vol),
-    ssc = mean(ssc),
-    syrup_gal = mean(syrup_vol)
+    sap_gal = mean(is.na (sap_vol)),
+    ssc = mean(is.na (ssc)),
+    syrup_gal = mean(is.na (syrup_vol))
   )
 
 head(vig02)
@@ -266,15 +282,17 @@ vig02 %>%
 ## 
 ## run ggplot x =rbai, y = various tree metrics, size = year
 
-
+# df=vig03 = post harvest data by FTG rating
 vig03 <- annual %>% 
   select(seq, tag, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
          crown.class, pct.open.jan.2019, FTG2019, crown.area.2017) %>% 
   filter(year == "2019" | year == "2020") %>% 
   group_by(FTG2019) %>% 
   summarize(
+    n = n(),
     vigor = mean(rbai),
     dbh_med = median(dbh),
+    dbh_mean = mean(dbh),
     BA = mean(basal_area),
     bai = mean(bai),
     PCTopen = mean(pct.open.jan.2019),
@@ -289,14 +307,18 @@ head(vig03)
 vig03 %>% 
   write_csv(path = "summary-vigor-syrup-post-harvest.csv")
 
+
+# df=vig04 = post harvest data by FTG and crown strata
 vig04 <- annual %>% 
   select(seq, tag, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
          crown.class, strata.post, pct.open.jan.2019, FTG2019, crown.area.2017) %>% 
   filter(year == "2019" | year == "2020") %>% 
   group_by(strata.post, FTG2019) %>% 
   summarize(
+    n = n(),
     vigor = mean(rbai),
     dbh_med = median(dbh),
+    dbh_mean = mean(dbh),
     BA = mean(basal_area),
     bai = mean(bai),
     PCTopen = mean(pct.open.jan.2019),
@@ -312,8 +334,6 @@ vig04 %>%
   write_csv(path = "summary-vigor-syrup-post-harvest-crown-class.csv")
 
 ```
-
-
 
 
 
@@ -599,6 +619,112 @@ ggplot((data = syrup_wide),
   
 # R and p-value https://stackoverflow.com/questions/7549694/add-regression-line-equation-and-r2-on-graph?noredirect=1&lq=1 
 # 
+  
+  
+  
+  
+
+```
+
+
+
+### GGPLOT of column data 
+#### Crown Class, FTG, etc.
+
+
+```{r}
+annual %>% 
+  select(crown.area.2017, strata.pre, FTG2019) %>% 
+  group_by(FTG2019, strata.pre) %>% 
+  summarize(crown.area = mean(crown.area.2017)) %>% 
+  ggplot() +
+  geom_col(aes(x=FTG2019, y=crown.area, fill = strata.pre), color = "black", position = "dodge2") +
+  theme_classic()+
+  labs(
+    x = "Crown Free-To-Grow Rating in 2019",
+    y = "Crown Area (sq. ft)",
+    title = "Crown Area Among Treatments"
+  )
+
+  ggsave("figures/column-crown-area-FTG-strata.jpg")
+
+  
+annual %>% 
+  filter(year == "2017" | year == "2018") %>% 
+  mutate(year = as.character(year)) %>% 
+  select(bai, strata.pre, year) %>% 
+  group_by(year, strata.pre) %>% 
+  summarize(bai = mean(bai)) %>% 
+  ggplot()+
+  geom_col(aes(x=year, y = bai, fill = strata.pre), color = "red", position = "dodge2")+
+  theme_classic()+
+  labs(
+    x = "Year",
+    y = "Basal Area Increment (sq inches)",
+    title = "Average Growth Pre-Harvest (2017 & 2018)"
+  )
+
+  ggsave("figures/column-BAI-FTG-strata.jpg")
+  
+  
+  
+  
+annual %>% 
+  filter(year == "2019" | year == "2020") %>% 
+  select(bai, strata.post, FTG2019) %>% 
+  group_by(FTG2019, strata.post) %>% 
+  summarize(bai = mean(bai)) %>% 
+  ggplot()+
+  geom_col(aes(x=FTG2019, y = bai, fill = strata.post), color = "red", position = "dodge2")+
+  theme_classic()+
+  labs(
+    x = "Crown Free-to-Grow Rating (2019)",
+    y = "Basal Area Increment (sq inches)",
+    title = "Average Growth Response Post-Harvest (2019 & 2020)"
+  )
+
+  ggsave("figures/column-BAI-FTG-strata.jpg")
+
+
+# Vigor by Crown class (2017 vs. 2019)and by year
+annual %>%
+  filter(year > 2017) %>% 
+  mutate(year_c = as.character(year)) %>% 
+  select(rbai, strata.post, year_c) %>% 
+  group_by(year_c, strata.post) %>% 
+  summarize(rbai = mean(rbai)) %>% 
+  ggplot() +
+  geom_col(aes(x=year_c, y = rbai, fill = strata.post), position = "dodge2") +
+  theme_classic() +
+  labs(
+    x = "Year and Post-Harvest Crown Class",
+    y = "Tree Vigor (rBAI as % of 2017 Basal Area)",
+    title = "Tree Vigor Response to Crown Class and Thinning",
+    subtitle = "Harvest completed August 2018"
+  )
+  
+  ggsave("figures/column-rBAI-year-crownclass2019.jpg")
+
+
+  annual %>%
+  mutate(year = as.character(year)) %>% 
+  filter(year > 2017) %>% 
+  select(rbai, strata.pre, year) %>% 
+  group_by(year, strata.pre) %>% 
+  summarize(rbai = mean(rbai)) %>% 
+  ggplot() +
+  geom_col(aes(x=year, y = rbai, fill = strata.pre), position = "dodge2") +
+  theme_classic() +
+  labs(
+    x = "Year and Pre-Harvest Crown Class",
+    y = "Tree Vigor (rBAI as % of 2017 Basal Area)",
+    title = "Tree Vigor Response to Crown Class and Thinning",
+    subtitle = "Harvest completed August 2018"
+  )
+  
+  ggsave("figures/column-rBAI-year-crownclass2017.jpg")
+
+  
 
 ```
 
