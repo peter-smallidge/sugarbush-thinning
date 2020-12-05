@@ -53,6 +53,9 @@ head(crown, n=10)
 
 ```{r}
 
+## calculate the dbhI to allow graphing of minimally acceptable growth rate
+
+
 syrup_wide <- read_csv("lumbershed.annual.2020.csv",
                        col_types = cols(seq = col_character(),
                                         tag = col_integer())
@@ -265,6 +268,7 @@ vig02 <- annual %>%
     dbh_med = median(dbh),
     dbh_mean = mean(dbh),
     BA = mean(basal_area),
+    bai = mean(bai),
     PCTopen = mean(pct.open.jan.2019),
     crown.area = mean(crown.area.2017),
     sap_gal = mean(is.na (sap_vol)),
@@ -283,6 +287,8 @@ vig02 %>%
 ## run ggplot x =rbai, y = various tree metrics, size = year
 
 # df=vig03 = post harvest data by FTG rating
+
+
 vig03 <- annual %>% 
   select(seq, tag, dbh, year, basal_area, bai, rbai, sap_vol, ssc, syrup_vol, 
          crown.class, pct.open.jan.2019, FTG2019, crown.area.2017) %>% 
@@ -337,7 +343,7 @@ vig04 %>%
 
 
 
-### Run ggplot of BAI x tree output for individual years
+### Run ggplot of BAI x tree output 
 
 ```{r}
 
@@ -399,7 +405,25 @@ ggplot((data = syrup_wide),
 
   
   ### BAI and Sap Volume  
+  ggplot((data = syrup_wide), 
+       mapping = aes(x=bai2017, y = sap2018)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment 2017 (sq. in.)",
+    y = "Sap Volume 2018 (gallons)",
+    title = "Tree Growth and Sap Volume",
+    subtitle = "Arnot Forest"
+  )
 
+  ggsave("figures/bai2017-sap2018.jpg")
+  
   ggplot((data = syrup_wide), 
        mapping = aes(x=bai2018, y = sap2019)) +
   geom_point((mapping = aes(size = crown.area.2017))) +
@@ -743,7 +767,7 @@ annual %>%
 
 ```{r}
 growth_plus_one <- annual %>% 
-  select(tag, year, basal_area, bai, rbai) %>% 
+  select(tag, year, dbh, basal_area, bai, rbai) %>% 
   mutate(year = year + 1) %>% 
      # increment up the growth data of a year to align with the next year's sap data
     filter(year<2021) 
@@ -752,7 +776,7 @@ growth_plus_one <- annual %>%
 head(growth_plus_one, n=10)
 
 year_adjusted <- annual %>% 
-  select(-c(basal_area, bai, rbai, vigor_base2017)) %>%  #remove growth variables
+  select(-c(dbh, basal_area, bai, rbai, vigor_base2017)) %>%  #remove growth variables
   full_join(growth_plus_one, by = c("tag", "year")) %>% 
   select(seq, tag, dbh, year, basal_area, bai, rbai, everything()) %>% 
     #reorder sequence of variables
@@ -784,14 +808,14 @@ ggplot((data = year_adjusted),
     x = "Basal Area  (sq. in.)",
     y = "Vigor (rBAI as % of 2017 BA)",
     title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg1"
   )
 
   ggsave("figures/basal_area-rbai.jpg")
 
   
 ggplot((data = year_adjusted), 
-       mapping = aes(x=bai, y = crown.area.2017)) +
+       mapping = aes(x=crown.area.2017, y = bai)) +
   geom_point((mapping = aes(size = 3, color = strata.post))) +
   geom_smooth(method = lm, se = FALSE) +
   stat_cor(label.x.npc="left",label.y.npc = "top", 
@@ -799,12 +823,13 @@ ggplot((data = year_adjusted),
   stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
           #stat_cor and stat_regline within library(ggpubr)
   theme_classic()+
-  xlim(0,10)+
+  ylim(0,10)+
+  xlim(0,1000)+
   labs(
-    x = "Basal Area Increment (sq. in.)",
-    y = "Crown Area in 2017 (sq. ft.)",
+    x = "Crown Area in 2017 (sq. ft.)",
+    y = "Basal Area Increment (sq. in.)",
     title = "Tree Growth Patterns",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg2"
   )
 
   ggsave("figures/basal_area_increment_crown_area.jpg")  
@@ -825,7 +850,7 @@ ggplot((data = year_adjusted),
     x = "Diameter Breast Height = dbh  ( in.)",
     y = "Syrup Volume (gal)",
     title = "Tree Size and Syrup Production",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg3"
   )
 
   ggsave("figures/dbh-syrup.jpg")
@@ -846,7 +871,7 @@ ggplot((data = year_adjusted),
     x = "Diameter Breast Height = dbh  ( in.)",
     y = "Sap Sugar Concentration (%)",
     title = "Tree Size and Syrup Production",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg4"
   )
 
   ggsave("figures/dbh-ssc.jpg")
@@ -855,6 +880,27 @@ ggplot((data = year_adjusted),
   
   
 ggplot((data = year_adjusted), 
+       mapping = aes(x=dbh, y = syrup_vol)) +
+  geom_point((mapping = aes(size = crown.area.2017, color = strata.post))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(5,22)+
+  labs(
+    x = "Diameter Breast Height  (dbh, in.)",
+    y = "Syrup Volume (gal)",
+    title = "Tree Size and Syrup Production",
+    subtitle = "Arnot Forest, pg5"
+  )
+
+  ggsave("figures/dbh-syrup.jpg")  
+  
+  
+  
+  ggplot((data = year_adjusted), 
        mapping = aes(x=basal_area, y = syrup_vol)) +
   geom_point((mapping = aes(size = crown.area.2017, color = strata.post))) +
   geom_smooth(method = lm, se = FALSE) +
@@ -863,22 +909,23 @@ ggplot((data = year_adjusted),
   stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
           #stat_cor and stat_regline within library(ggpubr)
   theme_classic()+
-  xlim(50,350)+
+ # xlim(0,25)+
   labs(
     x = "Basal Area  (sq in.)",
     y = "Syrup Volume (gal)",
     title = "Tree Size and Syrup Production",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg5b"
   )
 
-  ggsave("figures/dbh-syrup.jpg")  
+  ggsave("figures/basal_area-syrup.jpg") 
+  
   
 ### graphs for BAI
 ###
 
 ggplot((data = year_adjusted), 
        mapping = aes(x=bai, y = ssc)) +
-  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_point((mapping = aes(size = crown.area.2017, color = year_sap))) +
   geom_smooth(method = lm, se = FALSE) +
   stat_cor(label.x.npc="left",label.y.npc = "top", 
            method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
@@ -890,13 +937,13 @@ ggplot((data = year_adjusted),
     x = "Basal Area Increment (sq. in.)",
     y = "Sap Sugar Concentration (%)",
     title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg6"
   )
 
   ggsave("figures/bai-ssc.jpg")
 
-
-  ggplot((data = year_adjusted), 
+ 
+  ggplot((data = year_adjusted),
        mapping = aes(x=bai, y = sap_vol)) +
   geom_point((mapping = aes(size = crown.area.2017))) +
   geom_smooth(method = lm, se = FALSE) +
@@ -909,12 +956,80 @@ ggplot((data = year_adjusted),
   labs(
     x = "Basal Area Increment (sq. in.)",
     y = "Sap Volume (gal)",
-    title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    title = "Tree Growth 2017-2020 and SSC",
+    subtitle = "Arnot Forest, pg7"
   )
 
   ggsave("figures/bai-sap-volume.jpg")
 
+  
+  
+preharvest <- year_adjusted %>% 
+  filter(year_sap < 2019)
+#head(preharvest, n=20)
+
+  ggplot((data = preharvest),
+       mapping = aes(x=bai, y = sap_vol)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment (sq. in.)",
+    y = "Sap Volume (gal)",
+    title = "Pre-Harvest Tree Growth and Sap Volume",
+    subtitle = "Arnot Forest, pg7a"
+  )
+
+  ggsave("figures/PRE-harvest-bai-sap-volume.jpg")  
+  
+  
+  ggplot((data = preharvest),
+       mapping = aes(x=bai, y = syrup_vol)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment (sq. in.)",
+    y = "Syrup Volume (gal)",
+    title = "Pre-Harvest Tree Growth and Syrup Volume",
+    subtitle = "Arnot Forest, pg7b"
+  )
+
+  ggsave("figures/PRE-harvest-bai-syrup-volume.jpg")  
+  
+  
+  
+  ggplot((data = preharvest),
+       mapping = aes(x=bai, y = ssc)) +
+  geom_point((mapping = aes(size = crown.area.2017))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,10)+
+  labs(
+    x = "Basal Area Increment (sq. in.)",
+    y = "Sap Sugar Concentration (%)",
+    title = "Pre-Harvest Tree Growth and Sap Sugar Concentration",
+    subtitle = "Arnot Forest, pg7c"
+  )
+
+  ggsave("figures/PRE-harvest-bai-ssc.jpg")    
+  
+  
+  
   
     ggplot((data = year_adjusted), 
        mapping = aes(x=bai, y = syrup_vol)) +
@@ -929,8 +1044,8 @@ ggplot((data = year_adjusted),
   labs(
     x = "Basal Area Increment (sq. in.)",
     y = "Syrup Volume (gal)",
-    title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    title = "Tree Growth and Syrup Production",
+    subtitle = "Arnot Forest, pg8"
   )
 
   ggsave("figures/bai-syrup-volume.jpg")
@@ -953,7 +1068,7 @@ ggplot((data = year_adjusted),
     x = "Vigor (rBAI = BAI % BA 2017 sq. in.)",
     y = "Sap Sugar Concentration (%)",
     title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg9"
   )
 
   ggsave("figures/vigor-ssc.jpg")
@@ -973,7 +1088,7 @@ ggplot((data = year_adjusted),
     x = "Vigor (rBAI = BAI % BA 2017 sq. in.)",
     y = "Sap Volume (gal)",
     title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg10"
   )
 
   ggsave("figures/vigor-sap-volume.jpg")
@@ -993,7 +1108,7 @@ ggplot((data = year_adjusted),
     x = "Vigor (rBAI = BAI % BA 2017 sq. in.)",
     y = "Syrup Volume (gal)",
     title = "Tree Growth and SSC",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg11"
   )
 
   ggsave("figures/vigor-syrup-volume.jpg")
@@ -1019,8 +1134,8 @@ ggplot((data = year_adjusted),
   labs(
     x = "Percent of Crown Open (%)",
     y = "Sap Sugar Concentration (%)",
-    title = " Post-Harvest Tree Growth and Sap Sugar Concentration",
-    subtitle = "Arnot Forest"
+    title = "Crown Exposure and Sap Sugar Concentration",
+    subtitle = "Arnot Forest, pg12"
   )
 
   ggsave("figures/post-harvest-PCT-open-crown-ssc.jpg")
@@ -1041,15 +1156,36 @@ ggplot((data = year_adjusted),
     x = "Percent of Crown Open (%)",
     y = "Sap Volume (gal)",
     title = " Post-Harvest Tree Growth and Sap Volume",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg13"
   )
 
   ggsave("figures/post-harvest-PCT-open-crown-sap-volume.jpg")
   
   
     ggplot((data = post), 
+       mapping = aes(x=pct.open.jan.2019, y = bai)) +
+  geom_point((mapping = aes(size = 3))) +
+  geom_smooth(method = lm, se = FALSE) +
+  stat_cor(label.x.npc="left",label.y.npc = "top", 
+           method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
+  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+          #stat_cor and stat_regline within library(ggpubr)
+  theme_classic()+
+  xlim(0,360)+
+  labs(
+    x = "Percent of Crown Open (%)",
+    y = "Basal Area Increment (sq. in.)",
+    title = " Post-Harvest Tree Growth and Tree Growth",
+    subtitle = "Arnot Forest, pg14"
+  )
+
+  ggsave("figures/post-harvest-PCT-open-crown-bai.jpg")
+  
+  
+  
+    ggplot((data = post), 
        mapping = aes(x=bai, y = sap_vol)) +
-  geom_point((mapping = aes(color = pct.open.jan.2019))) +
+  geom_point((mapping = aes(color = pct.open.jan.2019, size = 3))) +
   geom_smooth(method = lm, se = FALSE) +
   stat_cor(label.x.npc="left",label.y.npc = "top", 
            method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
@@ -1061,7 +1197,7 @@ ggplot((data = year_adjusted),
     x = "Basal Area Increment (sq. in.)",
     y = "Sap Volume (gal)",
     title = " Post-Harvest Tree Growth and Sap Volume",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg15"
   )
 
   ggsave("figures/post-harvest-bai-sap-volume.jpg")
@@ -1081,7 +1217,7 @@ ggplot((data = year_adjusted),
     x = "Basal Area Increment (sq. in)",
     y = "Syrup Volume (gal)",
     title = " Post-Harvest Tree Growth and Syrup Volume",
-    subtitle = "Arnot Forest"
+    subtitle = "Arnot Forest, pg16"
   )
 
   ggsave("figures/post-harvest-bai-syrup-volume.jpg")
