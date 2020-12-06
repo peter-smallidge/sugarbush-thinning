@@ -1301,6 +1301,6 @@ x1 %>%
     subtitle = "Arnot Forest, col22"
   )
 
-  ggsave("figures/year-ftg-sap-vol.jpg")  
+  ggsave("figures/year-ftg-ssc-vol.jpg")  
 ```
 
