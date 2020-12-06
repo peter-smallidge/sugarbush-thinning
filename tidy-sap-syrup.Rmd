@@ -1225,4 +1225,82 @@ preharvest <- year_adjusted %>%
   
 ```
 
+#### Production Per Year by FTG
+
+```{r}
+#   mutate(year = as.character(year_sap)) %>% 
+#       n = sum(is.na (numb)),
+#   geom_col(aes(x=FTG2019, y=crown.area, fill = strata.pre), color = "black", position = "dodge2") +
+
+
+
+
+x1 <-  year_adjusted %>% 
+  select(year_sap, FTG2019, sap_vol, ssc, syrup_vol) %>% 
+  mutate(FTG2019 = as.character(FTG2019)) %>% 
+  arrange(year_sap) %>% 
+  group_by(FTG2019, year_sap) %>% 
+  filter(year_sap > 2016) %>% 
+  summarize(
+    sap_vol_mean = mean((sap_vol)),
+    ssc_mean = mean((ssc)),
+    syrup_vol_mean = mean((syrup_vol))
+  )
+
+head(x1, n=15)
+
+x1 %>% 
+  write_csv(path = "year_by_FTG.csv")
+
+x1 %>% 
+  filter(year_sap >2017) %>% 
+  ggplot((data=x1), 
+         mapping = aes(x = year_sap, y = sap_vol_mean, color = FTG2019))+
+  geom_col(aes(x=year_sap, y=sap_vol_mean, fill=FTG2019),color= "black", position= "dodge")+
+      theme_classic()+
+  #xlim(0,10)+
+  labs(
+    x = "Year",
+    y = "Sap Volume (gal)",
+    title = " Annual Sap Production by Free-To-Grow",
+    subtitle = "Arnot Forest, col20"
+  )
+
+  ggsave("figures/year-ftg-sap-vol.jpg")
+
+  
+x1 %>% 
+  filter(year_sap >2017) %>% 
+  ggplot((data=x1), 
+         mapping = aes(x = year_sap, y = syrup_vol_mean, color = FTG2019))+
+  geom_col(aes(x=year_sap, y=syrup_vol_mean, fill=FTG2019),color= "black", position= "dodge")+
+      theme_classic()+
+  #xlim(0,10)+
+  labs(
+    x = "Year",
+    y = "Sap Volume (gal)",
+    title = " Annual Syrup Production by Free-To-Grow",
+    subtitle = "Arnot Forest, col21"
+  )
+
+  ggsave("figures/year-ftg-syrup-vol.jpg")  
+  
+  
+  
+x1 %>% 
+  filter(year_sap >2017) %>% 
+  ggplot((data=x1), 
+         mapping = aes(x = year_sap, y = ssc_mean, color = FTG2019))+
+  geom_col(aes(x=year_sap, y=ssc_mean, fill=FTG2019),color= "black", position= "dodge")+
+      theme_classic()+
+  #xlim(0,10)+
+  labs(
+    x = "Year",
+    y = "Sap Volume (gal)",
+    title = " Annual Sap Sugar Concentration by Free-To-Grow",
+    subtitle = "Arnot Forest, col22"
+  )
+
+  ggsave("figures/year-ftg-sap-vol.jpg")  
+```
 
