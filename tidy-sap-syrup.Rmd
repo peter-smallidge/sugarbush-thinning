@@ -657,7 +657,7 @@ ggplot((data = syrup_wide),
 
 
 ```{r}
-annual %>% 
+col01 <- annual %>% 
   select(crown.area.2017, strata.pre, FTG2019) %>% 
   group_by(FTG2019, strata.pre) %>% 
   summarize(crown.area = mean(crown.area.2017)) %>% 
@@ -667,13 +667,13 @@ annual %>%
   labs(
     x = "Crown Free-To-Grow Rating in 2019",
     y = "Crown Area (sq. ft)",
-    title = "Crown Area Among Treatments"
+    title = "Crown Area Among Treatments, col01, tidy-sap-syrup"
   )
-
+set_palette(col01, "uchicago")
   ggsave("figures/column-crown-area-FTG-strata.jpg")
 
   
-annual %>% 
+col02 <- annual %>% 
   filter(year == "2017" | year == "2018") %>% 
   mutate(year = as.character(year)) %>% 
   select(bai, strata.pre, year) %>% 
@@ -685,15 +685,16 @@ annual %>%
   labs(
     x = "Year",
     y = "Basal Area Increment (sq inches)",
-    title = "Average Growth Pre-Harvest (2017 & 2018)"
+    title = "Average Growth Pre-Harvest (2017 & 2018), tidy-sap-syrup"
   )
+set_palette(col02, "uchicago")
 
   ggsave("figures/column-BAI-FTG-strata.jpg")
   
   
   
   
-annual %>% 
+col03 <- annual %>% 
   filter(year == "2019" | year == "2020") %>% 
   select(bai, strata.post, FTG2019) %>% 
   group_by(FTG2019, strata.post) %>% 
@@ -704,14 +705,15 @@ annual %>%
   labs(
     x = "Crown Free-to-Grow Rating (2019)",
     y = "Basal Area Increment (sq inches)",
-    title = "Average Growth Response Post-Harvest (2019 & 2020)"
+    title = "Average Growth Response Post-Harvest (2019 & 2020), tidy-sap-syrup"
   )
+set_palette(col03, "uchicago")
 
   ggsave("figures/column-BAI-FTG-strata.jpg")
 
 
 # Vigor by Crown class (2017 vs. 2019)and by year
-annual %>%
+col04 <- annual %>%
   filter(year > 2017) %>% 
   mutate(year_c = as.character(year)) %>% 
   select(rbai, strata.post, year_c) %>% 
@@ -724,13 +726,17 @@ annual %>%
     x = "Year and Post-Harvest Crown Class",
     y = "Tree Vigor (rBAI as % of 2017 Basal Area)",
     title = "Tree Vigor Response to Crown Class and Thinning",
-    subtitle = "Harvest completed August 2018"
+    subtitle = "Harvest completed August 2018, col04, tidy-sap-syrup"
   )
-  
+ set_palette(col04, "uchicago")
+ 
   ggsave("figures/column-rBAI-year-crownclass2019.jpg")
 
+  # colq <-  x1 %>% 
+# set_palette(colq, "uchicago")
+  
 
-  annual %>%
+ col05 <-  annual %>%
   mutate(year = as.character(year)) %>% 
   filter(year > 2017) %>% 
   select(rbai, strata.pre, year) %>% 
@@ -743,9 +749,9 @@ annual %>%
     x = "Year and Pre-Harvest Crown Class",
     y = "Tree Vigor (rBAI as % of 2017 Basal Area)",
     title = "Tree Vigor Response to Crown Class and Thinning",
-    subtitle = "Harvest completed August 2018"
+    subtitle = "Harvest completed August 2018, col05, tidy-sap-syrup"
   )
-  
+  set_palette(col05, "uchicago")
   ggsave("figures/column-rBAI-year-crownclass2017.jpg")
 
   
@@ -814,17 +820,20 @@ ggplot((data = year_adjusted),
   ggsave("figures/basal_area-rbai.jpg")
 
   
-ggplot((data = year_adjusted), 
+year_sort <- year_adjusted %>% 
+  filter(year_sap > 2017)
+  ggplot((data = year_sort), 
        mapping = aes(x=crown.area.2017, y = bai)) +
   geom_point((mapping = aes(size = 3, color = strata.post))) +
   geom_smooth(method = lm, se = FALSE) +
   stat_cor(label.x.npc="left",label.y.npc = "top", 
            method="pearson", r.digits=2, p.digits=4, p.accuracy = 0.001)+
-  stat_regline_equation(label.x.npc="center",label.y.npc = "top")+  
+  stat_regline_equation(label.x.npc="center",label.y.npc = "left")+  
           #stat_cor and stat_regline within library(ggpubr)
   theme_classic()+
   ylim(0,10)+
   xlim(0,1000)+
+  facet_wrap(~year_sap)+
   labs(
     x = "Crown Area in 2017 (sq. ft.)",
     y = "Basal Area Increment (sq. in.)",
@@ -1203,7 +1212,9 @@ preharvest <- year_adjusted %>%
   ggsave("figures/post-harvest-bai-sap-volume.jpg")
     
   
-    ggplot((data = post), 
+
+  
+ggplot((data = post), 
        mapping = aes(x=bai, y = syrup_vol)) +
   geom_point((mapping = aes(color = FTG2019, size = strata.post))) +
   geom_smooth(method = lm, se = FALSE) +
@@ -1219,7 +1230,6 @@ preharvest <- year_adjusted %>%
     title = " Post-Harvest Tree Growth and Syrup Volume",
     subtitle = "Arnot Forest, pg16"
   )
-
   ggsave("figures/post-harvest-bai-syrup-volume.jpg")
   
   
@@ -1252,7 +1262,11 @@ head(x1, n=15)
 x1 %>% 
   write_csv(path = "year_by_FTG.csv")
 
-x1 %>% 
+# colq <-  x1 %>% 
+# set_palette(colq, "uchicago")
+
+
+col20 <- x1 %>% 
   filter(year_sap >2017) %>% 
   ggplot((data=x1), 
          mapping = aes(x = year_sap, y = sap_vol_mean, color = FTG2019))+
@@ -1263,13 +1277,13 @@ x1 %>%
     x = "Year",
     y = "Sap Volume (gal)",
     title = " Annual Sap Production by Free-To-Grow",
-    subtitle = "Arnot Forest, col20"
+    subtitle = "Arnot Forest, harvested 8/2018, col20, tidy-sap-syrup"
   )
-
+set_palette(col20, "uchicago")
   ggsave("figures/year-ftg-sap-vol.jpg")
 
   
-x1 %>% 
+col21 <- x1 %>% 
   filter(year_sap >2017) %>% 
   ggplot((data=x1), 
          mapping = aes(x = year_sap, y = syrup_vol_mean, color = FTG2019))+
@@ -1278,16 +1292,17 @@ x1 %>%
   #xlim(0,10)+
   labs(
     x = "Year",
-    y = "Sap Volume (gal)",
+    y = "Syrup Volume (gal)",
     title = " Annual Syrup Production by Free-To-Grow",
-    subtitle = "Arnot Forest, col21"
+    subtitle = "Arnot Forest, harvested 8/2018 col21, tidy-sap-syrup"
   )
+set_palette(col21, "uchicago")
 
   ggsave("figures/year-ftg-syrup-vol.jpg")  
   
   
   
-x1 %>% 
+col22 <- x1 %>% 
   filter(year_sap >2017) %>% 
   ggplot((data=x1), 
          mapping = aes(x = year_sap, y = ssc_mean, color = FTG2019))+
@@ -1298,9 +1313,123 @@ x1 %>%
     x = "Year",
     y = "Sap Volume (gal)",
     title = " Annual Sap Sugar Concentration by Free-To-Grow",
-    subtitle = "Arnot Forest, col22"
+    subtitle = "Arnot Forest, harvested 8/2018,col22, tidy-sap-syrup"
   )
+set_palette(col22, "uchicago")
 
   ggsave("figures/year-ftg-ssc-vol.jpg")  
 ```
+
+
+
+
+### Tree Growth Response to 2020 Drought
+
+```{r}
+
+
+x2 <-  annual %>% 
+  select(year, FTG2019, dbh, basal_area, bai, rbai, strata.pre, strata.post, crown.area.2017) %>% 
+  mutate(FTG2019 = as.character(FTG2019)) %>% 
+  arrange(year) %>% 
+  group_by(FTG2019, year) %>% 
+  filter(year > 2016) %>% 
+  summarize(
+    bai = mean(bai),
+    rbai = mean(rbai),
+    basal = mean(basal_area),
+    dbh = median(dbh)
+  )
+
+head(x2, n=15)
+
+x1 %>% 
+  write_csv(path = "growth_year_by_FTG.csv")
+
+
+```
+
+```{r}
+#,set_palette(palette="jco") other good = GnBu, uchicago,Greens, RdYlGn
+# col23 <-  x2 %>% 
+# set_palette(col23, "uchicago")
+
+
+
+
+
+col23 <-  x2 %>% 
+filter(year > 2017) %>% 
+  ggplot((data = x2),
+    mapping = aes(x=year, y = bai, color = FTG2019)) +
+    geom_col(aes(x=year, y = bai, fill = FTG2019), position = "dodge")+
+    theme_classic()+
+    #ylim(0,5)+
+    labs(
+      x = "Year of Growth",
+      y = "Basal Area Increment - bai (sq. in.)",
+      title = "Annual BAI by Free-To-Grow Rating",
+      subtitle = "Arnot Forest, Harvested 8/2018, col23, tidy-sap-syrup"
+    )
+set_palette(col23, "uchicago")
+  ggsave("figures/col-year-ftg-bai.jpg") 
+
+
+col24 <-  x2 %>% 
+filter(year > 2017) %>% 
+  ggplot((data = x2),
+    mapping = aes(x=year, y = rbai, color = FTG2019)) +
+    geom_col(aes(x=year, y = rbai, fill = FTG2019),  position = "dodge")+
+    theme_classic()+
+    #ylim(0,5)+
+    labs(
+      x = "Year of Growth",
+      y = "Relative Basal Area Increment - rbai (% of 2017 BA)",
+      title = "Annual rBAI by Free-To-Grow Rating",
+      subtitle1 = "Arnot Forest, Harvested 8/2018, col24, tidy-sap-syrup"
+    )
+set_palette(col24, "uchicago")
+  ggsave("figures/col-year-ftg-rbai.jpg") 
+
+col25 <-  x2 %>% 
+filter(year > 2017) %>% 
+  ggplot((data = x2),
+    mapping = aes(x=year, y = basal, color = FTG2019)) +
+    geom_col(aes(x=year, y = basal, fill = FTG2019),  position = "dodge")+
+    theme_classic()+
+    #ylim(0,5)+
+    labs(
+      x = "Year of Growth",
+      y = "Basal Area (sq. in.)",
+      title = "Annual Basal Area by Free-To-Grow Rating",
+      subtitle = "Arnot Forest, Harvested 8/2018, col25, tidy-sap-syrup"
+    )
+set_palette(col25, "uchicago")
+  ggsave("figures/col-year-ftg-basal.jpg") 
+
+
+  
+col26 <-  x2 %>% 
+filter(year > 2017) %>% 
+  ggplot((data = x2),
+    mapping = aes(x=year, y = dbh, color = FTG2019)) +
+    geom_col(aes(x=year, y = dbh, fill = FTG2019),  position = "dodge")+
+    theme_classic()+
+    #ylim(0,5)+
+    labs(
+      x = "Year of Growth",
+      y = "Medial DBH (in.)",
+      title = "Annual DBH by Free-To-Grow Rating",
+      subtitle = "Arnot Forest, Harvested 8/2018, col26, tidy-sap-syrup"
+    )
+set_palette(col26, "uchicago")
+  ggsave("figures/col-year-ftg-dbh.jpg") 
+  
+```
+
+
+
+
+
+
 
