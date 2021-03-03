@@ -66,7 +66,17 @@ X2021_sap_sugar_data <- read_excel("2021.sap.sugar.data.xlsx",
     na = ".", skip = 2)
 View(X2021_sap_sugar_data)
 
-sap 
+sap <- X2021_sap_sugar_data %>% 
+  mutate(
+    sap.gal = volume * 0.231412,
+    syrup.gal = (sap.gal / (87.5 / ssc))
+    )
+
+  
+View(sap)
+
+
+
 
 ```
 
