@@ -52,6 +52,22 @@ library(readr)
 # RMD comment = <!-- comment -->
 
 
+
+```
+
+
+```{r, echo=FALSE}
+
+
+library(readxl)
+X2021_sap_sugar_data <- read_excel("2021.sap.sugar.data.xlsx", 
+    col_types = c("text", "numeric", "numeric", 
+        "numeric", "text", "numeric", "numeric"), 
+    na = ".", skip = 2)
+View(X2021_sap_sugar_data)
+
+sap 
+
 ```
 
 
