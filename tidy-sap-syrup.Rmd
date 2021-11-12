@@ -22,6 +22,7 @@ library(ggpubr)
 library(tidyr)
 library(skimr)
 library(readr)
+library(readxl)
 
 
 #
@@ -36,15 +37,62 @@ library(readr)
 ### Reading Static (single measurement) Variables
 
 
+#
+# the source of this file is likely
+# :\Users\pjs23\Documents\Projects\Maple\Maple research\Maple Response to Thinning\
+#          Lumbershed Area\Crown Release Yield Per Acre\canister data....and the worksheet
+#         "all.attribute"
+
+
+
 ```{r}
-crown <- read_csv("lumbershed.static.2020.csv", 
-    col_types = cols(seq = col_character(), 
-        tag = col_integer(), ftg2017 = col_integer()))
-crown <- crown %>% 
-  select(-ftg2017_1) 
+crown_lumbershed <- read_excel("lumbershed.static.2020_updated.xlsx")
+
+crown_lumbershed <- crown_lumbershed %>% 
+  rename(pct.open.2017 = ftg2017) %>% 
+  select(seq, tag, crownclass2018, crownclass2020, strata.pre, strata.post,
+         pct.open.2017, pct.open.jan.2019, FTG2019, crown.area.2017, numb.taps2017) %>% 
+  mutate(location = "lumbershed") %>% 
+  rename(ftg_post = FTG2019,
+         strata_pre = strata.pre,
+         strata_post = strata.post
+         )
+
+crown_decker <- read_excel("decker_static.xlsx", skip=3,
+    col_types = c("text", "text", "text", 
+        "text", "text", "text", "numeric", 
+        "text", "text", "text", "text", "numeric"))
+  #str(crown_decker)
+  #
+  #
+  #as of 12nov2021, these two data files need to merge by site, tag, etc
+
+```
 
 
-head(crown, n=10)
+
+```{r, echo=FALSE}
+
+
+X2021_sap_sugar_data <- read_excel("2021.sap.sugar.data.xlsx", 
+    col_types = c("text", "numeric", "numeric", 
+        "numeric", "text", "numeric", "numeric"), 
+    na = ".", skip = 2)
+
+raw2021 <- X2021_sap_sugar_data %>% 
+  mutate(
+    sap_vol = volume * 0.231412,
+    syrup_vol = (sap_vol / (87.5 / ssc))
+    )
+
+summ2021 <- raw2021 %>% 
+  
+#as of 12nov2021 need to acquire dbh data for both sites
+# and calculate basal area and basal area increment
+
+
+#str(raw2021)
+#head(raw2021, n=10)
 
 ```
 
@@ -93,7 +141,7 @@ head(syrup_wide, n=10)
 # dbh data, pivot long
 diam <-  
   pivot_longer(syrup_wide, c(dbh2016, dbh2017, dbh2018, dbh2019, dbh2020), names_to = 'year', values_to = 'dbh') %>%  # the "names_to" command uses the variables dbh2016, etc as the data within a new
-  # variable "year" The values_to command places the data of the variables dbh2016 etc within a new
+  # variable "year" The "values_to" command places the data of the variables dbh2016 etc within a new
   # variable "dbh"
   select(seq, tag, dbh, year, vigor_base2017)
 
@@ -219,7 +267,11 @@ annual <- diam %>%
   full_join(syrup, by = c("seq", "tag", "year")) %>% 
   full_join(crown, by = c("seq", "tag")) %>% 
   mutate(numb = 1) %>% 
+  mutate(site = "lumbershed")
   select(seq, tag, year, numb, everything())
+
+annual <- annual %>% 
+  full_join(xxxx, by = c("site", "seq", "tag", "year"))
 
 # the above code creates a new datafile (df) called "annual" based on the diam df
 # the "full_join" command adds the df BASAL to df DIAM by aligning the columns
